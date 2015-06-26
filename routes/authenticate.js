@@ -6,7 +6,7 @@ module.exports = router;
 
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'calendar-api-quickstart.json';
+var TOKEN_PATH = TOKEN_DIR + 'calendar-api-moonshine.json';
 
 
 /**
@@ -111,9 +111,8 @@ function getAuthUrl(credentials) {
         key: accessTypeTag.toString(),
         value: accessType.toString()
     });
-    var authUrl = authBaseUrl + '?' + EncodeQueryData(params);
 
-    return authUrl;
+    return authBaseUrl + '?' + EncodeQueryData(params);
 }
 
 /**
@@ -123,7 +122,9 @@ function getAuthUrl(credentials) {
 function EncodeQueryData(data) {
     var ret = [];
     for (var d in data)
+    {
         ret.push(data[d].key + "=" + encodeURIComponent(data[d].value));
+    }
     return ret.join("&");
 }
 

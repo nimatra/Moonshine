@@ -6,50 +6,48 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 var authenticate = require('./routes/authenticate');
 var calendars = require('./routes/calendars');
 
-var quickstart = express();
+var moonshine = express();
 
 // view engine setup
-quickstart.set('views', path.join(__dirname, 'views'));
-quickstart.set('view engine', 'jade');
+moonshine.set('views', path.join(__dirname, 'views'));
+moonshine.set('view engine', 'jade');
 
-quickstart.use(logger('dev'));
-quickstart.use(bodyParser.json());
-quickstart.use(bodyParser.urlencoded({extended: false}));
-quickstart.use(cookieParser());
-quickstart.use(express.static(path.join(__dirname, 'public')));
+moonshine.use(logger('dev'));
+moonshine.use(bodyParser.json());
+moonshine.use(bodyParser.urlencoded({extended: false}));
+moonshine.use(cookieParser());
+moonshine.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 
 var authRouter = express.Router({mergeParams: true});
 
-quickstart.use('/', routes);
-quickstart.use('/users', users);
-quickstart.use('/calendars', calendars);
+moonshine.use('/', routes);
+moonshine.use('/calendars', calendars);
 
-quickstart.use('/authenticate', authRouter);
+moonshine.use('/authenticate', authRouter);
 authRouter.use('/callback', authenticate.callback);
 authRouter.use('/', authenticate.authorize);
 
-quickstart.listen('4000', '0.0.0.0');
+moonshine.listen('4000', '0.0.0.0');
 
 
 
 // error handlers
 
 // catch 404 and forward to error handler
-quickstart.use(function (req, res, next) {
+moonshine.use(function (req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 // development error handler
 // will print stacktrace
-if (quickstart.get('env') === 'development') {
-    quickstart.use(function (err, req, res, next) {
+if (moonshine.get('env') === 'development') {
+    moonshine.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
@@ -60,7 +58,7 @@ if (quickstart.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-quickstart.use(function (err, req, res, next) {
+moonshine.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
@@ -69,9 +67,4 @@ quickstart.use(function (err, req, res, next) {
 });
 
 
-module.exports = quickstart;
-
-
-/**
- * Created by nimac on 6/25/15.
- */
+module.exports = moonshine;
