@@ -6,7 +6,7 @@ module.exports = router;
 
 var options = {
     host: 'https://www.googleapis.com',
-    path: 'calendar/v3/users/me/calendarList?access_token='
+    path: 'calendar/v3/users/me/calendarList'
 };
 
 /* GET home page. */
@@ -21,7 +21,7 @@ router.get('/', function (req, res, next) {
  */
 router.listCalendars = function (req, res) {
     var token = req.query.accessToken;
-    options.path += token;
+    options.path += getParams(token);
 
     http.request(options, calendarApiCallback).end();
     res.render('calendars', {
@@ -85,5 +85,42 @@ function listEvents(auth) {
             }
         }
     });
+}
+
+
+/**
+ * Constructs the AuthUrl from client secrets
+ * @param credentials
+ * @returns {string}
+ */
+function getParams(token) {
+
+    var apiKeyTag = 'key';
+    params = [];
+    params.push({
+        key: apiKeyTag.toString(),
+        value: "AIzaSyBNNOcpgdwVgFUL0rCoLk0oMcPca8_vwnM"
+    });
+    var tokenTag = 'access_token';
+    params = [];
+    params.push({
+        key: tokenTag.toString(),
+        value: token.toString()
+    });
+
+    return '?' + EncodeQueryData(params);
+}
+
+/**
+ * Encodes the parameters to the URI friendly format
+ * @return {string}
+ */
+function EncodeQueryData(data) {
+    var ret = [];
+    for (var d in data)
+    {
+        ret.push(data[d].key + "=" + encodeURIComponent(data[d].value));
+    }
+    return ret.join("&");
 }
 

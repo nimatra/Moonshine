@@ -1,5 +1,8 @@
 var express = require('express');
 var fs = require('fs');
+var http = require('http');
+var querystring = require('querystring');
+
 
 var router = express.Router();
 module.exports = router;
@@ -15,8 +18,8 @@ var TOKEN_PATH = TOKEN_DIR + 'calendar-api-moonshine.json';
  * @param res
  */
 router.callback = function (req, res) {
-    storeToken(req.query.code);
-    res.redirect('http://localhost:4000/calendars?accessToken=' + req.query.code);
+    router.code = req.query.code;
+    router.Exchange(res);
 };
 
 /**
@@ -34,37 +37,29 @@ router.authorize = function (req, res) {
         }
         // Authorize a client with the loaded credentials, then call the
         // Google Calendar API.
-        var url = getAuthUrl(JSON.parse(content));
+        router.credentials = JSON.parse(content);
+        authParams = querystring.stringify({
+            redirect_uri: router.credentials.web.redirect_uris[0],
+            response_type: 'code',
+            client_id: router.credentials.web.client_id,
+            scope: 'profile email https://www.googleapis.com/auth/calendar.readonly',
+            approval_prompt: 'force'
+        });
+        var authBaseUrl = router.credentials.web.auth_uri;
+        var url = authBaseUrl +'?'+ authParams.toString();
         res.redirect(url);
     });
 
 };
 
 /**
- * Stores token to disk be used in later program executions.
- *
- * @param {Object} token The token to store to disk.
- */
-function storeToken(token) {
-    try {
-        fs.mkdirSync(TOKEN_DIR);
-    } catch (err) {
-        if (err.code != 'EEXIST') {
-            throw err;
-        }
-    }
-    fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-    console.log('Token stored to ' + TOKEN_PATH);
-}
-/**
  * Constructs the AuthUrl from client secrets
- * @param credentials
  * @returns {string}
  */
-function getAuthUrl(credentials) {
+function getAuthUrl() {
 
-    var authBaseUrl = credentials.web.auth_uri;
-    var redirectUri = credentials.web.redirect_uris[0];
+    var authBaseUrl = router.credentials.web.auth_uri;
+    var redirectUri = router.credentials.web.redirect_uris[0];
     var redirectUriTag = 'redirect_uri';
     params = [];
     params.push({
@@ -80,7 +75,7 @@ function getAuthUrl(credentials) {
         value: responseType.toString()
     });
 
-    var clientId = credentials.web.client_id;
+    var clientId = router.credentials.web.client_id;
     var clientIdTag = 'client_id';
 
     params.push({
@@ -113,6 +108,84 @@ function getAuthUrl(credentials) {
     });
 
     return authBaseUrl + '?' + EncodeQueryData(params);
+}
+
+router.Exchange = function (res) {
+
+    // Authorize a client with the loaded credentials, then call the
+    // Google Calendar API.
+
+    data = querystring.stringify({
+        code: router.code,
+        client_id: router.credentials.web.client_id.toString(),
+        client_secret: router.credentials.web.client_secret.toString(),
+        redirect_uri: router.credentials.web.redirect_uris[0],
+        grant_type: 'authorization_code'
+    });
+    options = {
+        host: 'https://www.googleapis.com',
+        path: 'oauth2/v3/token'+'?'+data,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    };
+    http.request(options, exchangeApiCallback).end();
+};
+
+/**
+ *
+ * @param response
+ */
+function exchangeApiCallback(response) {
+    var str = '';
+
+    //another chunk of data has been recieved, so append it to `str`
+    response.on('data', function (chunk) {
+        str += chunk;
+    });
+
+    //the whole response has been recieved, so we just print it out here
+    response.on('end', function () {
+        exchanges = JSON.parse(str);
+        router.AccessToken = exchanges.access_token;
+        res.redirect('http://localhost:4000/calendars?accessToken=' + router.AccessToken);
+    });
+}
+
+
+function getExchangeParams() {
+
+    var redirectUri = router.credentials.web.redirect_uris[0];
+    var codeTag = 'code';
+    var clientIdTag = 'client_id';
+    var clientSecretTag = 'client_secret';
+    var redirectUriTag = 'redirect_uri';
+    var grantTag = 'grant_type';
+    params = [];
+    params.push({
+        key: redirectUriTag.toString(),
+        value: redirectUri.toString()
+    });
+    params.push({
+        key: clientIdTag.toString(),
+        value: router.credentials.web.client_id.toString()
+    });
+    params.push({
+        key: codeTag.toString(),
+        value: router.code.toString()
+    });
+    params.push({
+        key: clientSecretTag.toString(),
+        value: router.credentials.web.client_secret.toString()
+    });
+    params.push({
+        key: grantTag.toString(),
+        value: 'authorization_code'
+    });
+
+
+    return '?' + EncodeQueryData(params);
 }
 
 /**
