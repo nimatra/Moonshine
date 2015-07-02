@@ -4,7 +4,7 @@ var googleApi = require('googleapis');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var http = require('http');
 var routes = require('./routes/index');
 var authenticate = require('./routes/authenticate');
 var calendars = require('./routes/calendars');
@@ -25,7 +25,7 @@ moonshine.use(express.static(path.join(__dirname, 'public')));
 
 var authRouter = express.Router({mergeParams: true});
 
-moonshine.use('/', routes);
+//moonshine.use('/', routes);
 moonshine.use('/calendars', calendars);
 
 moonshine.use('/authenticate', authRouter);
@@ -34,8 +34,11 @@ authRouter.use('/', authenticate.callback);
 
 var port = process.env.PORT || 1337;
 
-moonshine.listen(port);
-
+//moonshine.listen(port);
+http.createServer(function (req, res) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Hello World\n');
+}).listen(port);
 
 
 // error handlers
