@@ -28,10 +28,14 @@ var authRouter = express.Router({mergeParams: true});
 moonshine.use('/', routes);
 moonshine.use('/calendars', calendars);
 
-moonshine.use('/authenticate', authenticate.authorize);
-authRouter.use('/authenticate/callback', authenticate.callback);
+moonshine.use('/authenticate', authRouter);
+authRouter.use('/callback', authenticate.authorize);
+authRouter.use('/', authenticate.callback);
 
-moonshine.listen('4000', '0.0.0.0');
+var port = process.env.PORT || 3000;
+
+moonshine.listen(port);
+
 
 
 // error handlers

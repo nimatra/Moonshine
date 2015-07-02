@@ -21,16 +21,8 @@ router.callback = function (req, res) {
     router.code = req.query.code;
     router.Exchange(res);
 };
-fs.readFile(__dirname + '/../client_secret.json', function processClientSecrets(err, content) {
-    if (err) {
-        console.log('Error loading client secret file: ' + err);
-        return;
-    }
-    // Authorize a client with the loaded credentials, then call the
-    // Google Calendar API.
-    router.credentials = JSON.parse(content);
 
-});
+
 /**
  * Authentication call
  * @param req
@@ -40,16 +32,27 @@ router.authorize = function (req, res) {
 
 // Load client secrets from a local file.
 
-    var authParams = querystring.stringify({
-        redirect_uri: router.credentials.web.redirect_uris[0],
-        response_type: 'code',
-        client_id: router.credentials.web.client_id,
-        scope: 'profile email https://www.googleapis.com/auth/calendar.readonly',
-        approval_prompt: 'force'
+    fs.readFile(__dirname + '/../client_secret.json', function processClientSecrets(err, content) {
+        if (err) {
+            console.log('Error loading client secret file: ' + err);
+            return;
+        }
+        // Authorize a client with the loaded credentials, then call the
+        // Google Calendar API.
+        router.credentials = JSON.parse(content);
+
+        var authParams = querystring.stringify({
+            redirect_uri: router.credentials.web.redirect_uris[0],
+            response_type: 'code',
+            client_id: router.credentials.web.client_id,
+            scope: 'profile email https://www.googleapis.com/auth/calendar.readonly',
+            approval_prompt: 'force'
+        });
+        var authBaseUrl = router.credentials.web.auth_uri;
+        var url = authBaseUrl +'?'+ authParams.toString();
+        res.redirect(url);
+
     });
-    var authBaseUrl = router.credentials.web.auth_uri;
-    var url = authBaseUrl +'?'+ authParams.toString();
-    res.redirect(url);
 };
 
 /**
@@ -130,6 +133,7 @@ router.Exchange = function (res) {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     };
+    router.res = res;
     http.request(options, exchangeApiCallback).end();
 };
 
@@ -149,7 +153,8 @@ function exchangeApiCallback(response) {
     response.on('end', function () {
         //exchanges = JSON.parse(str);
         //router.AccessToken = exchanges.access_token;
-        res.redirect('http://localhost:4000/echo?' + str);
+        router.res.render('callback', {title: str});
+
     });
 }
 
