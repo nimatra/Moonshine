@@ -147,8 +147,8 @@ function exchangeApiCallback(response) {
 
     //the whole response has been recieved, so we just print it out here
     response.on('end', function () {
-        exchanges = JSON.parse(str);
-        router.AccessToken = exchanges.access_token;
+        //exchanges = JSON.parse(str);
+        //router.AccessToken = exchanges.access_token;
         res.redirect('http://localhost:4000/echo?' + str);
     });
 }
