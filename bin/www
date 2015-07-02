@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-var app = require('../app');
+var app = require('../Moonshine');
 var debug = require('debug')('Sunrise:server');
 var http = require('http');
 
