@@ -32,7 +32,7 @@ moonshine.use('/authenticate', authRouter);
 authRouter.use('/callback', authenticate.authorize);
 authRouter.use('/', authenticate.callback);
 
-var port = process.env.PORT || 80;
+var port = process.env.PORT || 1337;
 
 moonshine.listen(port);
 
