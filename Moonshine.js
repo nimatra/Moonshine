@@ -28,12 +28,10 @@ var authRouter = express.Router({mergeParams: true});
 moonshine.use('/', routes);
 moonshine.use('/calendars', calendars);
 
-moonshine.use('/authenticate', authRouter);
-authRouter.use('/callback', authenticate.callback);
-authRouter.use('/', authenticate.authorize);
+moonshine.use('/authenticate', authenticate.authorize);
+authRouter.use('/authenticate/callback', authenticate.callback);
 
 moonshine.listen('4000', '0.0.0.0');
-
 
 
 // error handlers
