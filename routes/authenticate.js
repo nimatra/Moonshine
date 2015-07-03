@@ -9,7 +9,7 @@ module.exports = router;
 
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'calendar-api-moonshine.json';
+var TOKEN_PATH = TOKEN_DIR + 'calendar-api-app.json';
 
 
 /**

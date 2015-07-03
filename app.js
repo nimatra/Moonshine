@@ -9,32 +9,32 @@ var routes = require('./routes/index');
 var authenticate = require('./routes/authenticate');
 var calendars = require('./routes/calendars');
 
-var moonshine = express();
+var app = express();
 
 // view engine setup
-moonshine.set('views', path.join(__dirname, 'views'));
-moonshine.set('view engine', 'jade');
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
-moonshine.use(logger('dev'));
-moonshine.use(bodyParser.json());
-moonshine.use(bodyParser.urlencoded({extended: false}));
-moonshine.use(cookieParser());
-moonshine.use(express.static(path.join(__dirname, 'public')));
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 
 var authRouter = express.Router({mergeParams: true});
 
-//moonshine.use('/', routes);
-moonshine.use('/calendars', calendars);
+//app.use('/', routes);
+app.use('/calendars', calendars);
 
-moonshine.use('/authenticate', authRouter);
+app.use('/authenticate', authRouter);
 authRouter.use('/callback', authenticate.authorize);
 authRouter.use('/', authenticate.callback);
 
 var port = process.env.PORT || 1337;
 
-//moonshine.listen(port);
+//app.listen(port);
 http.createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('Hello World\n');
@@ -44,15 +44,15 @@ http.createServer(function (req, res) {
 // error handlers
 
 // catch 404 and forward to error handler
-moonshine.use(function (req, res, next) {
+app.use(function (req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 // development error handler
 // will print stacktrace
-if (moonshine.get('env') === 'development') {
-    moonshine.use(function (err, req, res, next) {
+if (app.get('env') === 'development') {
+    app.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
@@ -63,7 +63,7 @@ if (moonshine.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-moonshine.use(function (err, req, res, next) {
+app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
@@ -72,4 +72,4 @@ moonshine.use(function (err, req, res, next) {
 });
 
 
-module.exports = moonshine;
+module.exports = app;
